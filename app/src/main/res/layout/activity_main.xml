@@ -1,223 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/convertBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/converter_btn"
-        android:paddingLeft="50dp"
-        android:paddingRight="50dp"
-        android:text="convert"
-        android:textColor="@android:color/background_light"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.45"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/amount_entered" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.55" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.45" />
-
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:fontFamily="monospace"
-        android:text="TO"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="@+id/toSpinner"
-        app:layout_constraintEnd_toStartOf="@+id/toSpinner"
-        app:layout_constraintStart_toEndOf="@+id/fromSpinner"
-        app:layout_constraintTop_toTopOf="@+id/toSpinner" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/fromSpinner"
-        app:layout_constraintEnd_toEndOf="@+id/fromSpinner"
-        app:srcCompat="@drawable/ic_caret_black_24dp" />
-
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="@+id/toSpinner"
-        app:layout_constraintEnd_toEndOf="@+id/toSpinner"
-        app:srcCompat="@drawable/ic_caret_black_24dp" />
-
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.43" />
-
-    <EditText
-        android:id="@+id/amount_entered"
+    <include
+        android:id="@+id/customToolbar"
+        layout="@layout/layout_custom_toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/spinner_background"
-        android:ems="10"
-        android:inputType="number"
-        android:padding="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:text="Enter amount:"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <View
-        android:id="@+id/view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="#321D1B1B"
-        app:layout_constraintBottom_toTopOf="@+id/guideline5"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/server_timeText" />
-
-    <TextView
-        android:id="@+id/newAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="0"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="@+id/view"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.79"
-        app:layout_constraintStart_toStartOf="@+id/guideline3" />
-
-    <TextView
-        android:id="@+id/fText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:text="From:"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/view" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="To:"
-        app:layout_constraintEnd_toEndOf="@+id/fText"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/fText"
-        app:layout_constraintTop_toBottomOf="@+id/fromText" />
-
-    <TextView
-        android:id="@+id/fromText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Not Set"
-        app:layout_constraintStart_toStartOf="@+id/fText"
-        app:layout_constraintTop_toBottomOf="@+id/fText" />
-
-    <TextView
-        android:id="@+id/toText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Not Set"
-        app:layout_constraintStart_toStartOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
-
-    <TextView
-        android:id="@+id/server_timeText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="As at: "
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.toptoche.searchablespinnerlibrary.SearchableSpinner
-        android:id="@+id/fromSpinner"
+    <com.miguelcatalan.materialsearchview.MaterialSearchView
+        android:id="@+id/searchView"
         android:layout_width="0dp"
-        app:hintText="Select Currency"
-        android:layout_height="40dp"
-        android:background="@drawable/spinner_background"
-        app:layout_constraintBottom_toBottomOf="@+id/toSpinner"
-        app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/toSpinner"/>
+        android:layout_height="0dp"
+        android:backgroundTint="@color/blueBlackColor"
+        android:hint="Search Currency"
+        android:textColor="@color/whiteColor"
+        android:textColorHint="#CDC2C5BF"
+        app:layout_constraintBottom_toBottomOf="@+id/customToolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/customToolbar"
+        app:layout_constraintTop_toTopOf="@+id/customToolbar" />
 
-    <com.toptoche.searchablespinnerlibrary.SearchableSpinner
-        android:id="@+id/toSpinner"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/currencyTabLayout"
+        android:layout_width="411dp"
+        android:layout_height="wrap_content"
+        android:background="@color/blueBlackColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customToolbar"
+        app:tabIndicatorColor="@color/EarthYellowColor"
+        app:tabIndicatorHeight="3dp"
+        app:tabSelectedTextColor="@color/EarthYellowColor"
+        app:tabTextColor="#ECC2C5BF">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Converter" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Currencies info" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/mainFrame"
         android:layout_width="0dp"
-        android:layout_height="40dp"
-        app:hintText="Select Currency"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/spinner_background"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/guideline3"
-        app:layout_constraintTop_toTopOf="@+id/guideline5"/>
-</android.support.constraint.ConstraintLayout>
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currencyTabLayout">
+
+    </androidx.viewpager.widget.ViewPager>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

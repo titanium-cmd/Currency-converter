@@ -1,165 +1,131 @@
 package com.example.currencyconverter;
 
-import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager.widget.ViewPager;
 
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
+import com.google.android.material.tabs.TabLayout;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CurrencyInfoFragment.onResponseListener{
     public static API_SERVICES api_services;
-    private ProgressDialog progressDialog;
-    private float amountEntered;
-    private TextView fromText;
-    private TextView toText;
-    private ArrayList<String> currencyName;
-    private ArrayList currencySymbol;
+    private MaterialSearchView searchView;
+    private ListView currencyList;
+    private ProfileAdapter profileAdapter;
+    private CurrencyProfileResponse currenciesProfiles;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.search_currency);
+        searchView.setMenuItem(menuItem);
+        return true;
+    }
+
+    @Override
+    public void onResponse(CurrencyProfileResponse profiles) {
+        currenciesProfiles = profiles;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.customToolbar);
+        setSupportActionBar(toolbar); //setting custom toolbar as actionbar
+        getWindow().setStatusBarColor(getColor(R.color.blueBlackColor)); //change the window's status bar's color
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.mainFrame, new CurrencyConverterFragment(), "currency_converter_frag").addToBackStack(null).commit();  //add the converter to mainFrame first to load
 
-        currencyName = new ArrayList<>();
-        currencySymbol = new ArrayList();
-        loadCurrencies();
+        searchViewActivate(); //activate search functionality
 
-        Button convertbtn = findViewById(R.id.convertBtn);
-        convertbtn.setOnClickListener(new View.OnClickListener() {
+        TabLayout currencyTabLayout = findViewById(R.id.currencyTabLayout);
+        ViewPager currencyViewPager = findViewById(R.id.mainFrame);
+        currencyViewPager.setAdapter(new CurrencyViewPager(getSupportFragmentManager(), currencyTabLayout.getTabCount()));
+        currencyTabLayout.setupWithViewPager(currencyViewPager, true);
+    }
+
+    //function that activates the search functionality
+    private void searchViewActivate (){
+        searchView = findViewById(R.id.searchView);
+        searchView.setBackgroundColor(getColor(R.color.blueBlackColor));
+        searchView.setTextColor(getColor(R.color.whiteColor));
+        searchView.setBackIcon(getDrawable(R.drawable.ic_arrow_back_black_24dp));
+        searchView.setCloseIcon(getDrawable(R.drawable.ic_close_black_24dp));
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
             @Override
-            public void onClick(View v) {
-                progressbar("Converting", "Please wait..");
-                progressDialog.show();
-                EditText amount_entered = findViewById(R.id.amount_entered);
-                String amount = amount_entered.getText().toString();
+            public void onSearchViewShown() {}
 
-                if(amount.trim().equals("")){
-                    progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(), "Enter amount to convert", Toast.LENGTH_SHORT).show();
-                }else if(fromText.getText().toString().equals(toText.getText().toString())){
-                    progressDialog.dismiss();
-                    Toast.makeText(getApplicationContext(), "Cannot convert to same currency", Toast.LENGTH_SHORT).show();
-                }else {
-                    amountEntered = Float.valueOf(amount);
-                    convertAmount(amountEntered);
+            @Override
+            public void onSearchViewClosed() { //when search box has been closed
+                profileAdapter = new ProfileAdapter(MainActivity.this, currenciesProfiles.getResponse(), getSupportFragmentManager(), MainActivity.this); //default
+                setList(profileAdapter);
+            }
+        });
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) { //when user starts typing in search box
+                if(!(newText.isEmpty())){ //if the user typed text isn't empty
+                    checkForSearchItem(newText); //search for text searched
                 }
+                return true;
             }
         });
     }
 
-    private void progressbar(String title, String message){
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(title);
-        progressDialog.setMessage(message);
-        progressDialog.setCancelable(false);
-    }
-
-    private void loadCurrencies(){
-        progressbar("Getting currencies", "Please wait a minute...");
-        progressDialog.show();
-        api_services = API_CLIENT.getApiClient().create(API_SERVICES.class);
-        Call<JsonObject> apiCall = api_services.getCurrencies(API_CLIENT.getApiKey());
-        apiCall.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                progressDialog.dismiss();
-                if (response.isSuccessful()){
-                    JsonObject symbols = response.body();
-//                    Log.v("apiRequest", symbols.toString());
-                    for (Map.Entry<String,JsonElement> entry : symbols.entrySet()) {
-                        Log.v("apiRequest", entry.getValue().getAsString());
-                        currencyName.add(entry.getValue().getAsString());
-                        currencySymbol.add(entry.getKey());
+    //function to query for country or currency searched for
+    private void checkForSearchItem (String newText) {
+        ArrayList<CurrencyProfile> currencyProfilesFound = new ArrayList<>(); //an array to store all our matched items
+        if (!(currenciesProfiles == null)){ //if the API fetch is successful
+            for (CurrencyProfile currencyProfile: currenciesProfiles.getResponse()){
+                if (currencyProfile.getCountry() == null){ //Some currencies don't have countries (crypto). An empty string is used instead of null
+                    String country = "";
+                    //checking if query contains with a country's name or crypto
+                    if (currencyProfile.getName().trim().toLowerCase().contains(newText.trim().toLowerCase()) ||
+                            country.trim().toLowerCase().contains(newText.trim().toLowerCase())){
+                        currencyProfilesFound.add(currencyProfile); //add to matches found
                     }
-                    ArrayAdapter adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, currencyName);
-                    fromText = findViewById(R.id.fromText);
-                    fromText.setText(currencySymbol.get(0).toString());
-                    toText = findViewById(R.id.toText);
-                    toText.setText(currencySymbol.get(0).toString());
-
-                    Spinner fromCurrencySpinner = findViewById(R.id.fromSpinner);
-                    fromCurrencySpinner.setAdapter(adapter);
-                    fromCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            fromText.setText(currencySymbol.get(i).toString());
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {}
-                    });
-                    Spinner toCurrencySpinner = findViewById(R.id.toSpinner);
-                    toCurrencySpinner.setAdapter(adapter);
-                    toCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            toText.setText(currencySymbol.get(i).toString());
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {}
-                    });
-                }else{
-                    Toast.makeText(getApplicationContext(), "Try again later", Toast.LENGTH_SHORT).show();
+                }else {
+                    //checking if query contains with a country's currency or crypto
+                    if (currencyProfile.getName().trim().toLowerCase().contains(newText.trim().toLowerCase()) ||
+                            currencyProfile.getCountry().trim().toLowerCase().contains(newText.trim().toLowerCase())){
+                        currencyProfilesFound.add(currencyProfile); //add to matches found
+                    }
                 }
+                profileAdapter = new ProfileAdapter(MainActivity.this, currencyProfilesFound, getSupportFragmentManager(), MainActivity.this); //use new matches to set the profile adapter
+                setList(profileAdapter); //reset the profile's list
             }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                progressDialog.dismiss();
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+            TextView noResultsText = findViewById(R.id.noResultsText);
+            if (currencyProfilesFound.isEmpty()){ //if queried user text doesn't match
+                noResultsText.setVisibility(View.VISIBLE);
+                String baseError = "No country or currency for: ";
+                noResultsText.setText(baseError.concat(newText));
+            }else{
+                noResultsText.setVisibility(View.INVISIBLE);
             }
-        });
-
+        }else{
+            Toast.makeText(getApplicationContext(), "Data isn't loading to search", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void convertAmount(float amountEntered){
-        progressDialog.dismiss();
-        String from = fromText.getText().toString();
-        String to = toText.getText().toString();
-        Call<JsonObject> apiCall = api_services.currencyConvert(API_CLIENT.getApiKey(), from, to,amountEntered);
-        apiCall.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.isSuccessful() && response.body().get("success").getAsBoolean()){
-                    double result = response.body().get("result").getAsFloat();
-                    result = Math.round(result * 100.0) / 100.0;;
-//                    String time = response.body().getAsJsonObject("info").get("server_time").getAsString();
-                    TextView newAmount = findViewById(R.id.newAmount);
-                    newAmount.setText(result+"");
-//                    TextView serverTime = findViewById(R.id.server_timeText);
-//                    serverTime.setVisibility(View.VISIBLE);
-//                    serverTime.setText("As at: "+time);
-                    //Toast.makeText(getApplicationContext(), total, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
+    //function that sets the list with profile adapter
+    private void setList(ProfileAdapter adapter){
+        currencyList = findViewById(R.id.currency_lists);
+        currencyList.setAdapter(adapter);
     }
 }

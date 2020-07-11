@@ -10,6 +10,6 @@ public interface API_SERVICES {
     @GET("convert")
     Call<JsonObject> currencyConvert(@Query("access_key") String access_key, @Query("from") String from, @Query("to") String to, @Query("amount") float amount);
 
-    @GET("symbols")
-    Call<JsonObject> getCurrencies(@Query("access_key") String access_key);
+    @GET("{type}/profile")
+    Call<CurrencyProfileResponse> getInfo(@Path("type") String type, @Query("symbol") String symbol, @Query("access_key") String access_key);
 }
