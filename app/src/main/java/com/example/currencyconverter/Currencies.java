@@ -2,13 +2,13 @@ package com.example.currencyconverter;
 
 public class Currencies {
     private String currency_name, currency_code;
-    private int currency_id;
+    private String currency_id;
 
-    public int getCurrencyId() {
+    public String getCurrencyId() {
         return currency_id;
     }
 
-    public void setCurrencyId(int currency_id) {
+    public void setCurrencyId(String currency_id) {
         this.currency_id = currency_id;
     }
 

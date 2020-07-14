@@ -6,11 +6,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.annotation.NonNull;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,9 +21,7 @@ import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-
 import java.util.ArrayList;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,6 +37,7 @@ public class CurrencyInfoFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private Snackbar snackbar;
     private View view;
+    private static ArrayList<String> currencySymbols = new ArrayList<>();
 
     public interface onResponseListener{
         void onResponse(CurrencyProfileResponse profiles);
@@ -73,33 +71,34 @@ public class CurrencyInfoFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser){
+            swipeRefreshLayout = view.findViewById(R.id.swipeToRefresh);
+            swipeRefreshLayout.setRefreshing(true); //initially set refreshLayout to refreshing mode
+            snackbar = make(swipeRefreshLayout, "Internet connection not available", LENGTH_LONG)
+                    .setActionTextColor(getContext().getColor(R.color.EarthYellowColor)); //snackbar initialized with default message
+            if (isNetworkAvailable()){ //function that checks internet availability
+                loadInfo(view, getCurrencySymbols()); //fetch currency info from API based on currency symbols to this view
+            }else{
+                swipeRefreshLayout.setRefreshing(false);
+                snackbar.setAction("Retry", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        loadInfo(view, getCurrencySymbols()); //fetch currency info from API based on currency symbols to this view
+                    }
+                }).show(); //show snackbar with default message and action
+            }
 
-        swipeRefreshLayout = view.findViewById(R.id.swipeToRefresh);
-        swipeRefreshLayout.setRefreshing(true); //initially set refreshLayout to refreshing mode
-        snackbar = make(swipeRefreshLayout, "Internet connection not available", LENGTH_LONG)
-                .setActionTextColor(getContext().getColor(R.color.EarthYellowColor)); //snackbar initialized with default message
-        if (isNetworkAvailable()){ //function that checks internet availability
-            loadInfo(view, getCurrencySymbols()); //fetch currency info from API based on currency symbols to this view
-        }else{
-            swipeRefreshLayout.setRefreshing(false);
-            snackbar.setAction("Retry", new View.OnClickListener() {
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() { //a listener to check whether user has refreshed using swipelayout
                 @Override
-                public void onClick(View view) {
+                public void onRefresh() {
                     loadInfo(view, getCurrencySymbols()); //fetch currency info from API based on currency symbols to this view
                 }
-            }).show(); //show snackbar with default message and action
+            });
+
+            constantNetworkChecks(60000); //constantly checks the internet connectivity
         }
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() { //a listener to check whether user has refreshed using swipelayout
-            @Override
-            public void onRefresh() {
-                loadInfo(view, getCurrencySymbols()); //fetch currency info from API based on currency symbols to this view
-            }
-        });
-
-        constantNetworkChecks(60000); //constantly checks the internet connectivity
     }
 
     //function that loads currency info from the API to this current view
@@ -108,22 +107,29 @@ public class CurrencyInfoFragment extends Fragment {
         Call<CurrencyProfileResponse> apiCall = api_services.getInfo(API_CLIENT.getSymbolType(), currencySymbol, API_CLIENT.getInfoApiKey());
         apiCall.enqueue(new Callback<CurrencyProfileResponse>() {
             @Override
-            public void onResponse(Call<CurrencyProfileResponse> call, Response<CurrencyProfileResponse> response) { //if there is a response from the endpoint
-                if (response.isSuccessful() && response.body().getCode() == 200){ //upon a successful request
+            public void onResponse(Call<CurrencyProfileResponse> call, final Response<CurrencyProfileResponse> response) { //if there is a response from the endpoint
+                if (response.isSuccessful()){ //upon a successful request
+                    ArrayList<CurrencyProfile> newCurrencyList = new ArrayList<>();
+                    for (int i = 0; i < response.body().getResponse().size(); i++){ //lopping through to get out all forex currencies
+                        if (response.body().getResponse().get(i).getType().equals("forex")){
+                            newCurrencyList.add(response.body().getResponse().get(i)); //add only forex currencies to new list arraylist
+                        }
+                    }
                     CurrencyProfileResponse currencyProfile = response.body();
-                    profileAdapter = new ProfileAdapter(getContext(), currencyProfile.getResponse(), getFragmentManager(), getActivity());
+                    profileAdapter = new ProfileAdapter(getContext(), newCurrencyList, getFragmentManager());
                     responseListener.onResponse(currencyProfile);
                     currencyList = view.findViewById(R.id.currency_lists);
                     currencyList.setAdapter(profileAdapter);
                     swipeRefreshLayout.setRefreshing(false);
                 }else{
-                    Toast.makeText(getContext(), "not getting any data", Toast.LENGTH_SHORT).show();
+                    Log.v("bodyRes",response.toString());
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             }
 
             @Override
             public void onFailure(Call<CurrencyProfileResponse> call, Throwable t) { //if there is NO response from the endpoint
-                snackbar.setText("Failed to load"); //change the default message of snackbar and show
+                snackbar.setText(t.getMessage()); //change the default message of snackbar and show
                 if (!isNetworkAvailable()){
                     swipeRefreshLayout.setRefreshing(false);
                     snackbar.setText("Check your internet connection");
@@ -135,7 +141,7 @@ public class CurrencyInfoFragment extends Fragment {
                         }
                     }).show();
                 }else{
-                    snackbar.setText("Failed: not getting any data").show();
+                    snackbar.setText("Failed: "+t.getMessage()).show();
                     swipeRefreshLayout.setRefreshing(false);
                 }
             }
@@ -153,20 +159,14 @@ public class CurrencyInfoFragment extends Fragment {
         return connected;
     }
 
+    void receiveSymbols (ArrayList<String> symbols) {
+        currencySymbols.addAll(symbols);
+    }
+
     //function that gets currency symbols from db
     private String getCurrencySymbols () {
         String currencySymbol = "";
-        databaseManager = new DatabaseManager(getContext());  //instantiate db manager
-        final ArrayList<Currencies> currencies = databaseManager.getAllCurrencies(); //get all currencies from db manager
-        for (int i = 0; i<currencies.size(); i++) { //loop through all the currencies to format the currency symbols for processing...
-            if(i == 0){
-                currencySymbol += currencies.get(i).getCurrencyCode();
-            }else if (i == currencies.size()){
-                currencySymbol += currencies.get(i).getCurrencyCode()+ ",";
-            }else{
-                currencySymbol += ","+currencies.get(i).getCurrencyCode();
-            }
-        }
+        currencySymbol = android.text.TextUtils.join(",", currencySymbols);
         return currencySymbol; //format would be in the form {AED, GHS, EUR, THS}...
     }
 

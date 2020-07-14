@@ -1,38 +1,32 @@
 package com.example.currencyconverter;
 
-import android.app.Activity;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
-
 import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.StreamEncoder;
 import com.bumptech.glide.load.resource.file.FileToStreamDecoder;
 import com.caverock.androidsvg.SVG;
-
 import java.io.InputStream;
 import java.util.List;
 
 public class ProfileAdapter extends ArrayAdapter<CurrencyProfile> {
     private FragmentManager getSupportFragmentManager;
-    private Activity getActivity;
-    public ProfileAdapter(@NonNull Context context, @NonNull List<CurrencyProfile> objects, FragmentManager fragmentManager, Activity getActivity) {
+
+    public ProfileAdapter(@NonNull Context context, @NonNull List<CurrencyProfile> objects, FragmentManager fragmentManager) {
         super(context, 0, objects);
         this.getSupportFragmentManager = fragmentManager;
-        this.getActivity = getActivity;
     }
 
     @NonNull
@@ -45,13 +39,13 @@ public class ProfileAdapter extends ArrayAdapter<CurrencyProfile> {
         TextView currencySymbol = convertView.findViewById(R.id.symbolText);
         currencySymbol.setText(currencyProfile.getSymbol());
         TextView countryName = convertView.findViewById(R.id.countryNameText);
-        if (currencyProfile.getCountry() == null){
-            countryName.setText("No country");
-        }else{
-            countryName.setText(currencyProfile.getCountry());
-        }
-        Log.v("icons", currencyProfile.getIcon());
         ImageView countryIcon = convertView.findViewById(R.id.countryIcon);
+
+        if (currencyProfile.getType().equals("forex")){
+            countryName.setText(currencyProfile.getCountry());
+        }else {
+            getPosition(currencyProfile);
+        }
 
         GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> requestBuilder = Glide.with(getContext())
                 .using(Glide.buildStreamModelLoader(Uri.class, getContext()), InputStream.class)

@@ -29,11 +29,31 @@ public class DisplayBottomSheet extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_currency_display, container, false);
+        TextView currencyName = view.findViewById(R.id.currency);
+        currencyName.setText(String.format("%s (%s)", currencyProfile.getName(), currencyProfile.getShortName()));
         TextView countryName = view.findViewById(R.id.countryName);
-        countryName.setText(currencyProfile.getCountry());
-        TextView currency = view.findViewById(R.id.currency);
-        currency.setText(String.format("The people of %s spend %s (%s)",
-                countryName.getText().toString(), currencyProfile.getName(), currencyProfile.getShortName()));
+        if (currencyProfile.getCountry().equals("")){
+            countryName.setText("No country");
+        }else{
+            countryName.setText(currencyProfile.getCountry());
+        }
+
+        TextView type = view.findViewById(R.id.typeText);
+        type.setText(currencyProfile.getType());
+        TextView bank = view.findViewById(R.id.bankText);
+        bank.setText(currencyProfile.getBank());
+        TextView bankNotes = view.findViewById(R.id.bankNotesText);
+        bankNotes.setText(currencyProfile.getBankNotes());
+        TextView symbols = view.findViewById(R.id.symbolText);
+        symbols.setText(currencyProfile.getBankNotes2());
+        TextView coins = view.findViewById(R.id.coinsText);
+        coins.setText(currencyProfile.getCoins());
+        TextView code = view.findViewById(R.id.codeText);
+        code.setText(currencyProfile.getCodeN());
+        TextView subUnit = view.findViewById(R.id.subunitText);
+        subUnit.setText(currencyProfile.getSubUnit());
+        TextView websiteAddress = view.findViewById(R.id.websiteText);
+        websiteAddress.setText(currencyProfile.getWebsite());
         return view;
     }
 

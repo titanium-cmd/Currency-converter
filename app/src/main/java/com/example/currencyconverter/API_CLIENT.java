@@ -6,8 +6,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class API_CLIENT{
-    private static final String CONVERTER_API_KEY = "9g91i7i8wkr9clsdzdz4ij95zpnqc6kvr5pfkb7oxr7fjvgaz49k85ha25wk";
-    private static final String INFO_API_KEY = "59tGEctrFnm3H72Sbwc57Fm1Df3OF8zjI7YqpOLtqf04E";
+    private static final String CONVERTER_API_KEY = "gs5868102adff1i2j3x8614x0rfcm05p0i2ak752x2g00zg59gt6sv2o9864";
+    private static final String INFO_API_KEY = "SwywdykjWcS8cpJJ8Mkrgp0pJLMoSUbunoINvgVfYCGTpSaEsv";
     private static final String SYMBOL_TYPE = "forex";
     private static Retrofit retrofit = null;
 
@@ -22,12 +22,13 @@ public class API_CLIENT{
     }
 
     public static Retrofit getInfoApiClient() {
+        retrofit = null;
         final String INFO_BASE_URL = "https://fcsapi.com/api-v2/";
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder().baseUrl(INFO_BASE_URL).addConverterFactory(GsonConverterFactory.create(new GsonBuilder()
+        //if (retrofit == null) {
+            retrofit = new Retrofit.Builder().baseUrl("https://fcsapi.com/api-v2/").addConverterFactory(GsonConverterFactory.create(new GsonBuilder()
                     .setLenient()
                     .create())).build();
-        }
+        //}
         return retrofit;
     }
 

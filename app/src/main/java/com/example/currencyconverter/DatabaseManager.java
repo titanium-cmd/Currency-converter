@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class DatabaseManager extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "currencies.db";
+    private static final String DATABASE_NAME = "currencies_database.db";
     private static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME = "currency_table";
+    public static final String TABLE_NAME = "currencies_table";
     public static final String CURRENCY_ID = "_id";
     public static final String CURRENCY_NAME = "currency_name";
     public static final String CURRENCY_CODE = "currency_code";
@@ -47,13 +47,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
     //Methods associated with the table...
     public void addCurrency(JsonObject currencies){
         ContentValues values = new ContentValues();
-        for (Map.Entry<String, JsonElement> entry : currencies.entrySet()) {
-            values.put(CURRENCY_NAME, entry.getValue().getAsString());
-            values.put(CURRENCY_CODE, entry.getKey());
-            database = getWritableDatabase();
-            database.insert(TABLE_NAME, null, values);
-        }
 
+        database.close();
+    }
+
+    public void deleteStudent(String rowid){
+        database = getWritableDatabase();
+        String clause = CURRENCY_ID + " = ?";
+        String[] args = {rowid};
+        database.delete(TABLE_NAME, clause, args);
     }
 
     public ArrayList<Currencies> getAllCurrencies(){
@@ -68,7 +70,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         ArrayList<Currencies> currencyDetails = new ArrayList<>();
         while(cursor.moveToNext()){
             Currencies currencies = new Currencies();
-            currencies.setCurrencyId(cursor.getInt(currencyIdPos));
+            currencies.setCurrencyId(String.valueOf(cursor.getInt(currencyIdPos)));
             currencies.setCurrencyName(cursor.getString(currencyNamePos));
             currencies.setCurrencyCode(cursor.getString(currencyCodePos));
 

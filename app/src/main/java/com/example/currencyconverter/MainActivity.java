@@ -17,12 +17,13 @@ import com.google.android.material.tabs.TabLayout;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements CurrencyInfoFragment.onResponseListener{
+public class MainActivity extends AppCompatActivity implements CurrencyInfoFragment.onResponseListener, CurrencyConverterFragment.SendCurrencies{
     public static API_SERVICES api_services;
     private MaterialSearchView searchView;
     private ListView currencyList;
     private ProfileAdapter profileAdapter;
     private CurrencyProfileResponse currenciesProfiles;
+    private ViewPager currencyViewPager;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -50,9 +51,10 @@ public class MainActivity extends AppCompatActivity implements CurrencyInfoFragm
         searchViewActivate(); //activate search functionality
 
         TabLayout currencyTabLayout = findViewById(R.id.currencyTabLayout);
-        ViewPager currencyViewPager = findViewById(R.id.mainFrame);
+        currencyViewPager = findViewById(R.id.mainFrame);
         currencyViewPager.setAdapter(new CurrencyViewPager(getSupportFragmentManager(), currencyTabLayout.getTabCount()));
-        currencyTabLayout.setupWithViewPager(currencyViewPager, true);
+        currencyViewPager.setOffscreenPageLimit(2);
+        currencyTabLayout.setupWithViewPager(currencyViewPager);
     }
 
     //function that activates the search functionality
@@ -68,8 +70,10 @@ public class MainActivity extends AppCompatActivity implements CurrencyInfoFragm
 
             @Override
             public void onSearchViewClosed() { //when search box has been closed
-                profileAdapter = new ProfileAdapter(MainActivity.this, currenciesProfiles.getResponse(), getSupportFragmentManager(), MainActivity.this); //default
-                setList(profileAdapter);
+                if (currenciesProfiles != null){
+                    profileAdapter = new ProfileAdapter(MainActivity.this, currenciesProfiles.getResponse(), getSupportFragmentManager()); //default
+                    setList(profileAdapter);
+                }
             }
         });
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements CurrencyInfoFragm
                         currencyProfilesFound.add(currencyProfile); //add to matches found
                     }
                 }
-                profileAdapter = new ProfileAdapter(MainActivity.this, currencyProfilesFound, getSupportFragmentManager(), MainActivity.this); //use new matches to set the profile adapter
+                profileAdapter = new ProfileAdapter(MainActivity.this, currencyProfilesFound, getSupportFragmentManager()); //use new matches to set the profile adapter
                 setList(profileAdapter); //reset the profile's list
             }
             TextView noResultsText = findViewById(R.id.noResultsText);
@@ -127,5 +131,14 @@ public class MainActivity extends AppCompatActivity implements CurrencyInfoFragm
     private void setList(ProfileAdapter adapter){
         currencyList = findViewById(R.id.currency_lists);
         currencyList.setAdapter(adapter);
+    }
+
+    @Override
+    public void onLoadCurrencies(ArrayList<String> currencies) {
+        CurrencyViewPager ad = (CurrencyViewPager) currencyViewPager.getAdapter();
+        CurrencyInfoFragment fragment = (CurrencyInfoFragment) ad.getItem(1);
+        if (fragment != null) {
+            fragment.receiveSymbols(currencies);
+        }
     }
 }
