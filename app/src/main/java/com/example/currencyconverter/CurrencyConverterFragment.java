@@ -1,13 +1,15 @@
 package com.example.currencyconverter;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -114,18 +116,26 @@ public class CurrencyConverterFragment extends Fragment {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 JsonObject symbols = response.body();
-                for (Map.Entry<String, JsonElement> entry : symbols.entrySet()) {
-                    currencyName.add(entry.getValue().getAsString());
-                    currencySymbol.add(entry.getKey());
+
+                if (response.body().getAsJsonObject("error") != null){
+                    String type = response.body().getAsJsonObject("error").get("type").getAsString();
+                    if (type.equals("request_limit_reached")){
+                        shutdown();
+                    }
+                }else {
+                    for (Map.Entry<String, JsonElement> entry : symbols.entrySet()) {
+                        currencyName.add(entry.getValue().getAsString());
+                        currencySymbol.add(entry.getKey());
+                    }
+                    progressDialog.dismiss();
+                    sendCurrencies.onLoadCurrencies(currencySymbol);
                 }
-                progressDialog.dismiss();
-                sendCurrencies.onLoadCurrencies(currencySymbol);
             }
 
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
                 progressDialog.dismiss();
-                Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                requestReloadApp();
             }
         });
         ArrayAdapter adapter = new ArrayAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, currencyName);
@@ -178,6 +188,56 @@ public class CurrencyConverterFragment extends Fragment {
                 Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
+    private void shutdown(){
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        alertDialog.setTitle("Can't load");
+        alertDialog.setMessage("Api Key has been exhausted for this month. App will automatically close anytime soon. Sorry for any inconveniences.");
+        alertDialog.setCancelable(false);
+        alertDialog.setPositiveButton("EXIT APP", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alertDialog.create().dismiss();
+                close();
+            }
+        });
+        alertDialog.create().show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                alertDialog.create().dismiss();
+                close();
+            }
+        }, 10000);
+    }
+
+    private void close(){
+        getActivity().moveTaskToBack(true);
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(1);
+        System.exit(0);
+    }
+
+    private void requestReloadApp() {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+        alertDialog.setTitle("Can't load Currencies");
+        alertDialog.setMessage("Currencies couldn't load from the server. If problem persists please contact the developer. Want to try reloading?");
+        alertDialog.setCancelable(false);
+        alertDialog.setPositiveButton("reload", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alertDialog.create().dismiss();
+                loadCurrencies();
+            }
+        });
+        alertDialog.setNegativeButton("EXIT APP", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alertDialog.create().dismiss();
+                close();
+            }
+        });
+        alertDialog.create().show();
     }
 }

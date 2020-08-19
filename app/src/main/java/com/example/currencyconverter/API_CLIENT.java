@@ -6,7 +6,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class API_CLIENT{
-    private static final String CONVERTER_API_KEY = "gs5868102adff1i2j3x8614x0rfcm05p0i2ak752x2g00zg59gt6sv2o9864";
+    private static final String CONVERTER_API_KEY = "c017j2j7uufj4me86p3ls27xlpi105lzt88dl1a20gxdzlyi9c732g3eqs9c";
     private static final String INFO_API_KEY = "SwywdykjWcS8cpJJ8Mkrgp0pJLMoSUbunoINvgVfYCGTpSaEsv";
     private static final String SYMBOL_TYPE = "forex";
     private static Retrofit retrofit = null;
