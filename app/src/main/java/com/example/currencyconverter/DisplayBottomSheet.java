@@ -30,7 +30,11 @@ public class DisplayBottomSheet extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.layout_currency_display, container, false);
         TextView currencyName = view.findViewById(R.id.currency);
-        currencyName.setText(String.format("%s (%s)", currencyProfile.getName(), currencyProfile.getShortName()));
+        String shortName = currencyProfile.getShortName();
+        if(shortName == null){
+            shortName = "NA";
+        }
+        currencyName.setText(String.format("%s (%s)", currencyProfile.getName(), shortName));
         TextView countryName = view.findViewById(R.id.countryName);
         if (currencyProfile.getCountry().equals("")){
             countryName.setText("No country");
