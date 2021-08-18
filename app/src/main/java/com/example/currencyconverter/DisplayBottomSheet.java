@@ -45,7 +45,7 @@ public class DisplayBottomSheet extends BottomSheetDialogFragment {
         TextView bankNotes = view.findViewById(R.id.bankNotesText);
         bankNotes.setText(currencyProfile.getBankNotes());
         TextView symbols = view.findViewById(R.id.symbolText);
-        symbols.setText(currencyProfile.getBankNotes2());
+        symbols.setText(currencyProfile.getSymbol());
         TextView coins = view.findViewById(R.id.coinsText);
         coins.setText(currencyProfile.getCoins());
         TextView code = view.findViewById(R.id.codeText);

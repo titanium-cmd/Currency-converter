@@ -6,9 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,6 +19,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -199,7 +199,7 @@ public class CurrencyConverterFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 alertDialog.create().dismiss();
-                close();
+                closeApp();
             }
         });
         alertDialog.create().show();
@@ -207,12 +207,12 @@ public class CurrencyConverterFragment extends Fragment {
             @Override
             public void run() {
                 alertDialog.create().dismiss();
-                close();
+                closeApp();
             }
         }, 10000);
     }
 
-    private void close(){
+    private void closeApp(){
         getActivity().moveTaskToBack(true);
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(1);
@@ -222,20 +222,18 @@ public class CurrencyConverterFragment extends Fragment {
     private void requestReloadApp() {
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
         alertDialog.setTitle("Can't load Currencies");
-        alertDialog.setMessage("Currencies couldn't load from the server. If problem persists please contact the developer. Want to try reloading?");
+        alertDialog.setView(R.layout.layout_internet_issues);
         alertDialog.setCancelable(false);
         alertDialog.setPositiveButton("reload", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                alertDialog.create().dismiss();
                 loadCurrencies();
             }
         });
         alertDialog.setNegativeButton("EXIT APP", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                alertDialog.create().dismiss();
-                close();
+                closeApp();
             }
         });
         alertDialog.create().show();
